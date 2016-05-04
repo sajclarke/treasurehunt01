@@ -1,0 +1,28 @@
+/* Empty. Add your own CSS if you like */
+#map {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.scroll {
+  height: 100%;
+}
+
+.profile{
+  text-align: center;
+  background: #3a5fa7;
+  height:250px;
+  padding:10px;
+}
+
+.profile h3{
+  color:#fff;
+}
+
+.profile img{
+
+  margin:20px;
+  border-radius:100px;
+  /*border:1px solid #fff;*/
+
+}

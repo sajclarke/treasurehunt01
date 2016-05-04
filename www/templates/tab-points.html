@@ -1,0 +1,16 @@
+<ion-view view-title="Points" cache-view="false" >
+  <ion-content>
+    <ion-list>
+      <ion-item class="item-remove-animate item-icon-left item-icon-right" ng-repeat="pt in points" type="item-text-wrap" href="#/tab/points/{{pt.id}}">
+        <i class="icon ion-pinpoint"></i>
+        <h2>{{pt.title}}</h2>
+        <p>{{pt.latitude}} | {{pt.longitude}}</p>
+        <i class="icon ion-chevron-right icon-accessory"></i>
+
+        <ion-option-button class="button-assertive" ng-click="remove(chat)">
+          Delete
+        </ion-option-button>
+      </ion-item>
+    </ion-list>
+  </ion-content>
+</ion-view>
