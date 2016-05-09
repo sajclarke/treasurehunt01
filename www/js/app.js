@@ -1,12 +1,12 @@
 // Preload firebase dataset
 //TODO: Move this to services - and load from localstorage if already saved
-var fb = new Firebase('https://uwibootcamp.firebaseio.com/');
+/*var fb = new Firebase('https://uwibootcamp.firebaseio.com/');
 fb.set(
   {
     "points": [
     {
         id:1,
-        title: "Grapes of Wrath",
+        title: "Grape of Wrath",
         latitude: 13.105849,
         longitude: -59.5815219
     },
@@ -23,7 +23,9 @@ fb.set(
         longitude: -59.4897689
     }
   ]
-});
+});*/
+
+var fb = new Firebase("https://uwibootcamp-test.firebaseio.com")
 
 
 // angular.module is a global place for creating, registering and retrieving Angular modules
@@ -31,7 +33,7 @@ fb.set(
 // the 2nd parameter is an array of 'requires'
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
-angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
+angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', 'ngCordova','firebase', 'LocalStorageModule'])
 
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {
@@ -49,7 +51,9 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
   });
 })
 
-.config(function($stateProvider, $urlRouterProvider) {
+.config(function($stateProvider, $urlRouterProvider, localStorageServiceProvider) {
+
+  localStorageServiceProvider.setPrefix('bootcamp');
 
   // Ionic uses AngularUI Router which uses the concept of states
   // Learn more here: https://github.com/angular-ui/ui-router
