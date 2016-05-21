@@ -1,5 +1,66 @@
 angular.module('starter.controllers', ['starter.services','firebase'])
 
+.controller("LoginCtrl", function($scope, $firebaseAuth, $state, $http, $cordovaOauth) {
+
+    $scope.data = {
+        username:'',
+        userphoto:'',
+        email:'',
+        password:''
+    };
+
+    if(window.localStorage.getItem("user_info") != null) {
+        // $ionicViewService.nextViewOptions({
+        //     disableAnimate: true,
+        //     disableBack: true
+        // });
+        console.log("user info exists");
+        $state.go('tab.map');
+    }
+
+    var auth = $firebaseAuth(fb);
+
+    $scope.facebookLogin = function() {
+        $cordovaOauth.facebook("926779574008579", ["email"]).then(function(result) {
+            auth.$authWithOAuthToken("facebook", result.access_token).then(function(authData) {
+                // console.log(JSON.stringify(authData));
+
+                var accessToken = result.access_token;
+                console.log(accessToken);
+
+                $http.get("https://graph.facebook.com/v2.2/me", { params: { access_token: accessToken, fields: "id,name,gender,location,website,picture,relationship_status", format: "json" }}).then(function(result) {
+
+                    console.log(result.data);
+                    $scope.profileData = result.data;
+                    var user = result.data;
+
+                    var user_info =
+                          {
+                            '_id':user.id,
+                            'name':user.name,
+                            'email':user.email,
+                            'pic':"http://graph.facebook.com/"+user.id+"/picture?width=270&height=270"
+                          };
+
+                    console.log(user_info);
+                    //$scope.user = user;
+                    window.localStorage.setItem("user_info",JSON.stringify(user_info));
+
+                    console.log("Go to Map screen");
+                    $state.go('tab.map');
+
+            }, function(error) {
+                alert("There was a problem getting your profile.  Check the logs for details.");
+                console.error("ERROR: " + error);
+            });
+        }, function(error) {
+            alert("There was a problem signing in using facebook! Please try again.");
+            console.log("ERROR: " + error);
+        });
+    });
+  }
+
+})
 
 .controller('MapCtrl', function($scope, $ionicLoading, $state, $stateParams, $compile, Points) {
 
@@ -7,7 +68,7 @@ angular.module('starter.controllers', ['starter.services','firebase'])
   //TODO: Move this to services
   var markers = Points.all();
 
-  $scope.init = function() {
+  function init() {
         console.log("Load data from firebase and initialize map");
 
         var myLatlng = new google.maps.LatLng(13.1704468,-59.6357891); //Sandy Lane Golf Course lol
@@ -21,6 +82,8 @@ angular.module('starter.controllers', ['starter.services','firebase'])
 
         //Detect user's location
         navigator.geolocation.getCurrentPosition(function(pos) {
+
+
             map.setCenter(new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude));
             // var myLocation = new google.maps.Marker({
             //     position: new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude),
@@ -30,11 +93,7 @@ angular.module('starter.controllers', ['starter.services','firebase'])
         });
 
 
-        // var marker = new google.maps.Marker({
-        //   position: myLatlng,
-        //   map: map,
-        //   title: 'Uluru (Ayers Rock)'
-        // });
+
 
         for(var x=0;x < markers.length;x++){
 
@@ -62,6 +121,11 @@ angular.module('starter.controllers', ['starter.services','firebase'])
 
         $scope.map = map;
     };
+
+
+      google.maps.event.addDomListener(window, 'load', init);
+
+
 
     // google.maps.event.addDomListener(window, 'load', initialize);
 
@@ -111,13 +175,39 @@ angular.module('starter.controllers', ['starter.services','firebase'])
 .controller('PointInfoCtrl', function($scope, $stateParams, $firebase, $firebaseArray, Points, Comments, $ionicModal, $cordovaCamera) {
 
   console.log($stateParams);
-  $scope.points = Points.all();
+  console.log("showing point info");
+  // $scope.points = Points.all();
   $scope.point = Points.get($stateParams.pointId);
   $scope.point_id = $stateParams.pointId;
 
   $scope.comments = Comments.all($scope.point_id);
 
   console.log($scope.point);
+
+  /*function showLocation() {
+
+      var myLatlng = new google.maps.LatLng($scope.point.latitude,$scope.point.longitude);
+
+      var mapOptions = {
+        center: myLatlng,
+        zoom: 16,
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+      };
+      var map = new google.maps.Map(document.getElementById("point_location"),mapOptions);
+
+      //Marker + infowindow + angularjs compiled ng-click
+
+
+      var marker = new google.maps.Marker({
+        position: myLatlng,
+        map: map,
+        title: $scope.point.title
+      });
+
+      $scope.map = map;
+    }
+
+    google.maps.event.addDomListener(window, 'load', showLocation);*/
 
   $ionicModal.fromTemplateUrl('templates/modal-newComment.html', {
     scope: $scope
@@ -163,6 +253,8 @@ angular.module('starter.controllers', ['starter.services','firebase'])
           targetHeight: 500,
           saveToPhotoAlbum: false
       };
+
+      //TODO: Attach this to a comment
       $cordovaCamera.getPicture(options).then(function(imageData) {
           syncArray.$add({image: imageData}).then(function() {
               alert("Image has been uploaded");
@@ -176,19 +268,7 @@ angular.module('starter.controllers', ['starter.services','firebase'])
 
     var ref = new Firebase("https://uwibootcamp-test.firebaseio.com/");
     var commentsRef = ref.child("comments");
-    // commentsRef.set({
-    //   alanisawesome: {
-    //     date_of_birth: "June 23, 1912",
-    //     full_name: "Alan Turing"
-    //   },
-    //   gracehop: {
-    //     date_of_birth: "December 9, 1906",
-    //     full_name: "Grace Hopper"
-    //   }
-    // });
 
-    // var fb = new Firebase('https://uwibootcamp.firebaseio.com/');
-    //
     commentsRef.push({
         text: $scope.comment.text,
         point_id: parseInt($scope.point_id)
@@ -205,9 +285,29 @@ angular.module('starter.controllers', ['starter.services','firebase'])
 
 })
 
-.controller('AccountCtrl', function($scope) {
+.controller('AccountCtrl', function($scope,$state) {
 
   //TODO: Use user profile info (facebook login?)
+  if(window.localStorage.getItem("user_info") === "undefined" || window.localStorage.getItem("user_info") === null) {
+        // $ionicViewService.nextViewOptions({
+        //     disableAnimate: true,
+        //     disableBack: true
+        // });
+        console.log("redirecting to login");
+        $state.go('login')
+    }
+
+    var userinfo = JSON.parse(localStorage.getItem("user_info"));
+    $scope.userinfo = userinfo;
+    console.log(userinfo);
+
+    $scope.Logout = function(){
+      console.log("logging out");
+      var ref = new Firebase("https://uwibootcamp-test.firebaseio.com");
+      ref.unauth();
+      localStorage.clear();
+      $state.go('login');
+    }
 
 })
 

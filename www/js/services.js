@@ -17,18 +17,21 @@ angular.module('starter.services', ['firebase'])
         {
             id:1,
             title: "Grapefruit of Wrath",
+            hint:"What is sweet and angry?",
             latitude: 13.105849,
             longitude: -59.5815219
         },
         {
             id:2,
             title: "Wind Through the Keyhole",
+            hint:"What blows through small spaces?",
             latitude: 13.1337264,
             longitude: -59.5594634
         },
         {
             id:3,
             title: "Art of Racing in the Rain",
+            hint:"Sun Tzu",
             latitude: 13.1091092,
             longitude: -59.4897689
         }
@@ -40,7 +43,7 @@ angular.module('starter.services', ['firebase'])
 
   }
 
-  var points_data = new Firebase("https://uwibootcamp-test.firebaseio.com/points");
+  var points_data = new Firebase("https://uwibootcamp-test.firebaseio.com/");
 
   points = $firebaseArray(points_data);
   console.log(points);
