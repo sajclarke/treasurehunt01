@@ -1,11 +1,12 @@
 # uwibootcamp-Treasurehunt
-An Ionic sample app demonstrating
+An Ionic sample app demonstrating the use of Google Maps, Firebase and local storage in a treasure hunt app
 
 ## TODOS
 1. Integrate Camera
 2. Fix bugs with commenting
 3. Facebook/Twitter login
 4. Google Maps Directions API
+5. Localstorage (or CordovaSQL?)
 
 ## HOW TO USE
 

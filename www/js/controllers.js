@@ -1,38 +1,16 @@
 angular.module('starter.controllers', ['starter.services','firebase'])
 
-.controller('MapCtrl', function($scope, $ionicLoading, $state, $stateParams, $compile) {
 
+.controller('MapCtrl', function($scope, $ionicLoading, $state, $stateParams, $compile, Points) {
+
+  var points = Points;
   //TODO: Move this to services
-  var ref = new Firebase("https://uwibootcamp.firebaseio.com/");
-  // Attach an asynchronous callback to read the data at our posts reference
-  ref.on("value", function(snapshot) {
-
-    console.log(snapshot.val());
-
-    $scope.markers = snapshot.val();
-
-  }, function (errorObject) {
-    console.log("The read failed: " + errorObject.code);
-  });
-
-  // var usersRef = ref.child("users");
-  // usersRef.set({
-  //   alanisawesome: {
-  //     date_of_birth: "June 23, 1912",
-  //     full_name: "Alan Turing"
-  //   },
-  //   gracehop: {
-  //     date_of_birth: "December 9, 1906",
-  //     full_name: "Grace Hopper"
-  //   }
-  // });
-
-  var markers = $scope.markers.points;
+  var markers = Points.all();
 
   $scope.init = function() {
-        console.log("map init");
+        console.log("Load data from firebase and initialize map");
 
-        var myLatlng = new google.maps.LatLng(13.105908,-59.5393658);
+        var myLatlng = new google.maps.LatLng(13.1704468,-59.6357891); //Sandy Lane Golf Course lol
 
         var mapOptions = {
           center: myLatlng,
@@ -51,13 +29,6 @@ angular.module('starter.controllers', ['starter.services','firebase'])
             // });
         });
 
-        //Marker + infowindow + angularjs compiled ng-click
-        var contentString = "<div><a ng-click='clickTest()'>Click me!</a></div>";
-        var compiled = $compile(contentString)($scope);
-
-        var infowindow = new google.maps.InfoWindow({
-          content: compiled[0]
-        });
 
         // var marker = new google.maps.Marker({
         //   position: myLatlng,
@@ -72,6 +43,15 @@ angular.module('starter.controllers', ['starter.services','firebase'])
             map: map,
             title: markers[x].title
           });
+
+          //Marker + infowindow + angularjs compiled ng-click
+          var contentString = "<div><a ng-click='clickTest("+markers[x].id+")'>"+markers[x].title+"</a></div>";
+          var compiled = $compile(contentString)($scope);
+
+          var infowindow = new google.maps.InfoWindow({
+            content: compiled[0]
+          });
+
 
           google.maps.event.addListener(markerinfo, 'click', function() {
             infowindow.open(map,markerinfo);
@@ -103,9 +83,10 @@ angular.module('starter.controllers', ['starter.services','firebase'])
         });
     };
 
-    $scope.clickTest = function() {
-        // alert('Example of infowindow with ng-click');
-        $state.go('tab.point-info', { pointId:'2' });
+    //TODO: Fix this. Param is passing but content is not loading
+    $scope.clickTest = function(point_id) {
+
+        $state.go('tab.point-info', { pointId:point_id });
 
     };
 
@@ -127,14 +108,14 @@ angular.module('starter.controllers', ['starter.services','firebase'])
 
 })
 
-.controller('PointInfoCtrl', function($scope, $stateParams, $firebase, Points, Comments, $ionicModal) {
+.controller('PointInfoCtrl', function($scope, $stateParams, $firebase, $firebaseArray, Points, Comments, $ionicModal, $cordovaCamera) {
 
   console.log($stateParams);
   $scope.points = Points.all();
   $scope.point = Points.get($stateParams.pointId);
   $scope.point_id = $stateParams.pointId;
 
-  $scope.comments = Comments.all();
+  $scope.comments = Comments.all($scope.point_id);
 
   console.log($scope.point);
 
@@ -162,9 +143,38 @@ angular.module('starter.controllers', ['starter.services','firebase'])
     comment_date: timeInMs
   }];
 
+  // $ionicHistory.clearHistory();
+
+  $scope.images = [];
+
+  // var fb = new Firebase("https://uwibootcamp-test.firebaseio.com");
+  var syncArray = $firebaseArray(fb.child("images"));
+  $scope.images = syncArray;
+
+  $scope.takePhoto = function() {
+      var options = {
+          quality : 75,
+          destinationType : Camera.DestinationType.DATA_URL,
+          sourceType : Camera.PictureSourceType.CAMERA,
+          allowEdit : true,
+          encodingType: Camera.EncodingType.JPEG,
+          popoverOptions: CameraPopoverOptions,
+          targetWidth: 500,
+          targetHeight: 500,
+          saveToPhotoAlbum: false
+      };
+      $cordovaCamera.getPicture(options).then(function(imageData) {
+          syncArray.$add({image: imageData}).then(function() {
+              alert("Image has been uploaded");
+          });
+      }, function(error) {
+          console.error(error);
+      });
+  }
+
   $scope.saveComment = function(form){
 
-    var ref = new Firebase("https://uwibootcamp.firebaseio.com/");
+    var ref = new Firebase("https://uwibootcamp-test.firebaseio.com/");
     var commentsRef = ref.child("comments");
     // commentsRef.set({
     //   alanisawesome: {
@@ -181,7 +191,7 @@ angular.module('starter.controllers', ['starter.services','firebase'])
     //
     commentsRef.push({
         text: $scope.comment.text,
-        point_id: $scope.point_id
+        point_id: parseInt($scope.point_id)
     });
 
     //Clear the comment fields
