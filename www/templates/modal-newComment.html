@@ -1,45 +1,33 @@
 <div class="modal">
-
   <div class="bar bar-header bar-positive">
-
     <h1 class="title">Comments</h1>
     <button class="button button-icon ion-close" ng-click="closeCommentModal()"></button>
   </div>
-
   <ion-content class="padding">
-
     <form name="newCommentForm" novalidate>
-    <br>
-    <br>
-
-    <div ng-show="newCommentForm.$invalid" class="error-container text-center">
-      <p class="error form-error">{{errormsg}}</p>
-    </div>
-
+      <br>
+      <br>
+      <div ng-show="newCommentForm.$invalid" class="error-container text-center">
+        <p class="error form-error">{{errormsg}}</p>
+      </div>
       <div>
-
         <label class="item item-input item-stacked-label" ng-class="{ 'has-error' : newCommentForm.commentText.$invalid}">
           <textarea style="margin-top:10px;font-size:16px;"
-                    rows="10"
-                    name="commentText"
-                    ng-model="comment.text"
-                    placeholder="Type your comment here" required>
-          </textarea>
-        </label>
+          rows="10"
+          name="commentText"
+          ng-model="comment.text"
+          placeholder="Type your comment here" required>
+        </textarea>
+      </label>
+    </div>
 
-
-
-      </div>
-
-
-  </ion-content>
 
     <div class="bar bar-footer bar-positive" style="text-align:center;">
       <!-- <center> -->
-        <button class="button button-full button-positive" style="font-size:18px;text-align:center;padding:0;margin:0;" ng-click="saveComment(newCommentForm)">Save</button>
+      <button class="button button-full button-positive" style="font-size:18px;text-align:center;padding:0;margin:0;" ng-click="saveComment(newCommentForm)">Save</button>
       <!-- </center> -->
     </div>
   </form>
-
-
+</ion-content>
 </div>
+
